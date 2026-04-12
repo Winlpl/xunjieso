@@ -4,7 +4,7 @@
 
 **官网：** [https://www.xunjieso.com](https://www.xunjieso.com)  
 **作者：** 龙鹏林（小蜗牛）  
-**许可证：** 见 [LICENSE.md](LICENSE.md)
+**许可证：** 见 [LICENSE.md](LICENSE)
 
 ---
 
@@ -12,7 +12,7 @@
 
 | 特性 | 说明 |
 |------|------|
-| 🚀 极致性能 | 采用并行计算架构，充分利用多核 CPU |
+| 🚀 极致性能 | 采用并行计算架构，充分利用多核 CPU，实现毫秒级搜索. |
 | 🔍 多模式搜索 | 支持通配符（拼音 + 首拼）、正则表达式、SQL 语句等多种查询语法 |
 | ⚡ 实时同步 | 文件系统监控，即时感知创建、修改、移动、删除操作 |
 | 🔧 自定义扩展 | 可添加自定义字段（文件大小、创建时间、文件评分等） |
@@ -251,7 +251,7 @@ CREATE TABLE alltable (
 
 | 组件 | 许可证 |
 |------|--------|
-| [PCRE2](https://www.pcre.org/) | BSD-3-Clause WITH PCRE2-exception |
+| [PCRE2](https://github.com/PCRE2Project/pcre2) | BSD-3-Clause WITH PCRE2-exception |
 | [oneTBB](https://github.com/oneapi-src/oneTBB) | Apache License 2.0 |
 | [Hyrise SQL Parser](https://github.com/hyrise/sql-parser) | MIT License |
 
