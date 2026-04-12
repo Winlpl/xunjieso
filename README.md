@@ -1,313 +1,266 @@
-# xunjieso
-版权所有 © 龙鹏林（小蜗牛）
-官网：https://www.xunjieso.com
+# 迅捷搜（xunjieso）
 
-1. 所有权声明
-本DLL及其全部源代码的著作权及相关权利归龙鹏林（小蜗牛） 所有。
+> 高性能 Windows 文件搜索引擎 DLL，基于 MFT 解析与并行计算架构
 
-2. 使用授权
-任何第三方均有权将本DLL集成至其独立开发的软件产品中。
+**官网：** [https://www.xunjieso.com](https://www.xunjieso.com)  
+**作者：** 龙鹏林（小蜗牛）  
+**许可证：** 见 [LICENSE](LICENSE)
 
-3. 商业使用条款
-若包含本DLL的最终软件产品以任何形式向用户收取费用（包括但不限于：购买费、订阅费、功能解锁费、会员费等），则必须在产品首次公开发布或进行商业化运营之前，向版权方龙鹏林（小蜗牛） 支付授权费用。
-授权费的具体金额及支付方式由双方另行协商确定。
+---
 
-4. 免费使用条款
-若包含本DLL的最终软件产品完全免费且不涉及任何商业性质，则无需支付授权费用，但必须在软件的用户界面、关于页面或文档中的显著位置为版权方署名（例如：“本产品使用了由龙鹏林（小蜗牛）开发的迅捷搜DLL组件”）。
+## ✨ 核心特性
 
-5. 联系方式
-QQ：11345429
-邮箱：11345429@qq.com
+| 特性 | 说明 |
+|------|------|
+| 🚀 极致性能 | 采用并行计算架构，充分利用多核 CPU |
+| 🔍 多模式搜索 | 支持通配符（拼音 + 首拼）、正则表达式、SQL 语句等多种查询语法 |
+| ⚡ 实时同步 | 文件系统监控，即时感知创建、修改、移动、删除操作 |
+| 🔧 自定义扩展 | 可添加自定义字段（文件大小、创建时间、文件评分等） |
+| 🔄 异步操作 | 所有核心操作支持异步模式，不阻塞主线程 |
+| 📂 快速索引 | 解析 NTFS MFT，实现快速索引全盘文件 |
+| 🔒 安全 | SQL 仅支持 SELECT 语句，唯一有写入权限的只有 `xjs_db_Save()` |
 
-6. 免责声明
-本DLL按“现状”提供，不附带任何形式的明示或默示的保证，包括但不限于对适销性、特定用途适用性及不侵权的保证。在任何情况下，版权所有者或作者均不对因使用本DLL所导致的任何直接、间接、特殊或后果性损害承担责任。
+## 📊 技术特点
 
--------------------------------------------------------------------------------
-迅捷搜 内核 - 第三方组件声明
--------------------------------------------------------------------------------
-本软件包含以下第三方组件，我们感谢这些项目的作者：
+- **线程安全** — 关键操作提供读写锁机制，支持锁升级
+- **低内存占用** — 385 万文件仅占用约 **188MB** 内存，索引结构紧凑
+- **高效存储** — 采用紧凑数据结构，支持海量文件管理
+- **平台支持** — 目前仅支持 **Windows**
+- **编码统一** — 全局采用 **UTF-8** 编码
+- **权限要求** — 程序必须使用**管理员权限**或以**服务**方式运行
 
--------------------------------------------------------------------------------
-1. PCRE2 (Perl Compatible Regular Expressions)
-PCRE2 Licence
-SPDX-License-Identifier:	BSD-3-Clause WITH PCRE2-exception
-PCRE2 is a library of functions to support regular expressions whose syntax and semantics are as close as possible to those of the Perl 5 language.
+---
 
-Releases 10.00 and above of PCRE2 are distributed under the terms of the "BSD" licence, as specified below, with one exemption for certain binary redistributions. The documentation for PCRE2, supplied in the "doc" directory, is distributed under the same terms as the software itself. The data in the testdata directory is not copyrighted and is in the public domain.
+## 🛠️ 环境要求
 
-The basic library functions are written in C and are freestanding. Also included in the distribution is a just-in-time compiler that can be used to optimize pattern matching. This is an optional feature that can be omitted when the library is built. The just-in-time compiler is separately licensed under the "2-clause BSD" licence.
+- **操作系统：** Windows（NTFS 文件系统）
+- **编译器：** 支持 C/C++ 调用的编译器（MSVC、MinGW 等）
+- **架构：** x86（32 位） / x64（64 位）
+- **权限：** 管理员权限或服务运行
 
-COPYRIGHT
-The basic library functions
-Written by:       Philip Hazel
-Email local part: Philip.Hazel
-Email domain:     gmail.com
+---
 
-Retired from University of Cambridge Computing Service,
-Cambridge, England.
+## 📦 快速集成
 
-Copyright (c) 1997-2007 University of Cambridge
-Copyright (c) 2007-2024 Philip Hazel
-All rights reserved.
-PCRE2 Just-In-Time compilation support
-Written by:       Zoltan Herczeg
-Email local part: hzmester
-Email domain:     freemail.hu
+### 1. 引入头文件
 
-Copyright (c) 2010-2024 Zoltan Herczeg
-All rights reserved.
-Stack-less Just-In-Time compiler
-Written by:       Zoltan Herczeg
-Email local part: hzmester
-Email domain:     freemail.hu
+```c
+#include "xunjieso.h"
+```
 
-Copyright (c) 2009-2024 Zoltan Herczeg
-All rights reserved.
-The code in the deps/sljit directory has its own LICENSE file.
+### 2. 基本使用流程
 
-All other contributions
-Many other contributors have participated in the authorship of PCRE2. As PCRE2 has never required a Contributor Licensing Agreement, or other copyright assignment agreement, all contributions have copyright retained by each original contributor or their employer.
+```c
+// 创建引擎
+xjs_engine* engine = xjs_Create(nullptr, nullptr);
 
-THE "BSD" LICENCE
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+// 添加需要的数据库字段（必须在遍历之前调用）
+xjs_db_AddField(engine, "文件大小", nullptr);
+xjs_db_AddField(engine, "修改时间", nullptr);
 
-Redistributions of source code must retain the above copyright notices, this list of conditions and the following disclaimer.
+// 遍历全盘（异步）
+xjs_db_ScanPath(engine, nullptr, TRUE);
 
-Redistributions in binary form must reproduce the above copyright notices, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+// ... 等待遍历完成（可通过回调或轮询 xjs_db_GetEngineState 判断）
 
-Neither the name of the University of Cambridge nor the names of any contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+// 创建搜索结果对象
+xjs_result* result = xjs_result_Create(engine);
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// 执行搜索（通配符模式）
+int fingerprint = xjs_result_Query(result, "*.dll", 0, TRUE);
 
-EXEMPTION FOR BINARY LIBRARY-LIKE PACKAGES
-The second condition in the BSD licence (covering binary redistributions) does not apply all the way down a chain of software. If binary package A includes PCRE2, it must respect the condition, but if package B is software that includes package A, the condition is not imposed on package B unless it uses PCRE2 independently.
+// 获取结果数量
+int count = xjs_result_GetCount(result);
 
--------------------------------------------------------------------------------
-2. oneTBB (Intel Threading Building Blocks)
--------------------------------------------------------------------------------
-    Apache License
-                           Version 2.0, January 2004
-                        http://www.apache.org/licenses/
+// 遍历结果
+for (int i = 0; i < count; i++) {
+    int fileId = xjs_result_GetFileId(result, i);
+    const char* path = xjs_db_GetPath(engine, fileId);
+    const char* name = xjs_db_GetName(engine, fileId);
+    // ...
+}
 
-   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+// 销毁搜索结果
+xjs_result_Destroy(result);
 
-   1. Definitions.
+// 销毁引擎（内部会自动销毁所有未释放的 xjs_result*）
+xjs_Destroy(engine);
+```
 
-      "License" shall mean the terms and conditions for use, reproduction,
-      and distribution as defined by Sections 1 through 9 of this document.
+### 3. 调用约定
 
-      "Licensor" shall mean the copyright owner or entity authorized by
-      the copyright owner that is granting the License.
+| 平台 | 调用约定 |
+|------|---------|
+| x64 | 默认（无需指定） |
+| x86 | `__stdcall` |
 
-      "Legal Entity" shall mean the union of the acting entity and all
-      other entities that control, are controlled by, or are under common
-      control with that entity. For the purposes of this definition,
-      "control" means (i) the power, direct or indirect, to cause the
-      direction or management of such entity, whether by contract or
-      otherwise, or (ii) ownership of fifty percent (50%) or more of the
-      outstanding shares, or (iii) beneficial ownership of such entity.
+导出宏已通过 `XJS_API` 封装，调用约定已通过 `XJS_CALL` 封装，正常使用即可。
 
-      "You" (or "Your") shall mean an individual or Legal Entity
-      exercising permissions granted by this License.
+---
 
-      "Source" form shall mean the preferred form for making modifications,
-      including but not limited to software source code, documentation
-      source, and configuration files.
+## 📖 API 概览
 
-      "Object" form shall mean any form resulting from mechanical
-      transformation or translation of a Source form, including but
-      not limited to compiled object code, generated documentation,
-      and conversions to other media types.
+### 辅助函数
 
-      "Work" shall mean the work of authorship, whether in Source or
-      Object form, made available under the License, as indicated by a
-      copyright notice that is included in or attached to the work
-      (an example is provided in the Appendix below).
+| 函数 | 说明 |
+|------|------|
+| `xjs_util_FormatFileSize` | 格式化文件大小（返回 `"5.2 GB"`） |
+| `xjs_util_FormatTimestamp` | 格式化时间戳（返回 `"2023-10-24 15:30:00"`） |
 
-      "Derivative Works" shall mean any work, whether in Source or Object
-      form, that is based on (or derived from) the Work and for which the
-      editorial revisions, annotations, elaborations, or other modifications
-      represent, as a whole, an original work of authorship. For the purposes
-      of this License, Derivative Works shall not include works that remain
-      separable from, or merely link (or bind by name) to the interfaces of,
-      the Work and Derivative Works thereof.
+### 异常捕获
 
-      "Contribution" shall mean any work of authorship, including
-      the original version of the Work and any modifications or additions
-      to that Work or Derivative Works thereof, that is intentionally
-      submitted to Licensor for inclusion in the Work by the copyright owner
-      or by an individual or Legal Entity authorized to submit on behalf of
-      the copyright owner. For the purposes of this definition, "submitted"
-      means any form of electronic, verbal, or written communication sent
-      to the Licensor or its representatives, including but not limited to
-      communication on electronic mailing lists, source code control systems,
-      and issue tracking systems that are managed by, or on behalf of, the
-      Licensor for the purpose of discussing and improving the Work, but
-      excluding communication that is conspicuously marked or otherwise
-      designated in writing by the copyright owner as "Not a Contribution."
+| 函数 | 说明 |
+|------|------|
+| `xjs_EnableException` | 启用异常捕获 |
+| `xjs_DisableException` | 禁用异常捕获 |
 
-      "Contributor" shall mean Licensor and any individual or Legal Entity
-      on behalf of whom a Contribution has been received by Licensor and
-      subsequently incorporated within the Work.
+### 引擎 API
 
-   2. Grant of Copyright License. Subject to the terms and conditions of
-      this License, each Contributor hereby grants to You a perpetual,
-      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
-      copyright license to reproduce, prepare Derivative Works of,
-      publicly display, publicly perform, sublicense, and distribute the
-      Work and such Derivative Works in Source or Object form.
+| 函数 | 说明 |
+|------|------|
+| `xjs_Create` | 创建引擎实例 |
+| `xjs_Destroy` | 销毁引擎实例 |
+| `xjs_SetDefaultEngine` | 设置默认引擎句柄 |
+| `xjs_GetDefaultEngine` | 获取默认引擎句柄 |
+| `xjs_GetVersion` | 获取版本号（如 `"1.2.0.1"`） |
+| `xjs_GetLastError` | 获取最近错误码 |
+| `xjs_GetLastErrorMsg` | 获取最近错误文本 |
+| `xjs_SetCallback` | 设置回调事件 |
+| `xjs_Lock` / `xjs_Unlock` | 读写锁操作 |
+| `xjs_IsReadLock` / `xjs_IsWriteLock` | 查询锁状态 |
 
-   3. Grant of Patent License. Subject to the terms and conditions of
-      this License, each Contributor hereby grants to You a perpetual,
-      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
-      (except as stated in this section) patent license to make, have made,
-      use, offer to sell, sell, import, and otherwise transfer the Work,
-      where such license applies only to those patent claims licensable
-      by such Contributor that are necessarily infringed by their
-      Contribution(s) alone or by combination of their Contribution(s)
-      with the Work to which such Contribution(s) was submitted. If You
-      institute patent litigation against any entity (including a
-      cross-claim or counterclaim in a lawsuit) alleging that the Work
-      or a Contribution incorporated within the Work constitutes direct
-      or contributory patent infringement, then any patent licenses
-      granted to You under this License for that Work shall terminate
-      as of the date such litigation is filed.
+### 数据库 API
 
-   4. Redistribution. You may reproduce and distribute copies of the
-      Work or Derivative Works thereof in any medium, with or without
-      modifications, and in Source or Object form, provided that You
-      meet the following conditions:
+| 函数 | 说明 |
+|------|------|
+| `xjs_db_AddField` | 添加自定义字段 |
+| `xjs_db_Load` | 加载数据库 |
+| `xjs_db_Save` | 保存数据库 |
+| `xjs_db_Clear` | 清空数据库 |
+| `xjs_db_ScanPath` | 遍历分区 / 路径 |
+| `xjs_db_StopScan` | 停止遍历 |
+| `xjs_db_GetScanProgress` | 获取遍历进度 |
+| `xjs_db_GetEngineState` | 获取引擎状态 |
+| `xjs_db_GetFileCount` | 获取文件总数 |
+| `xjs_db_GetPath` | 获取文件路径 |
+| `xjs_db_GetName` | 获取文件名 |
+| `xjs_db_GetFileSize` | 获取文件大小 |
+| `xjs_db_GetModifyTime` | 获取修改时间 |
+| `xjs_db_GetChildrenIds` | 获取子项 ID |
+| `xjs_db_GetFileIdByPath` | 通过路径获取文件 ID |
+| ... | 更多字段访问函数见头文件 |
 
-      (a) You must give any other recipients of the Work or
-          Derivative Works a copy of this License; and
+### 同步 API
 
-      (b) You must cause any modified files to carry prominent notices
-          stating that You changed the files; and
+| 函数 | 说明 |
+|------|------|
+| `xjs_sync_AddPath` | 添加监控路径 |
+| `xjs_sync_RemovePath` | 移除监控路径 |
+| `xjs_sync_Start` | 开始监控 |
+| `xjs_sync_Pause` | 暂停同步 |
+| `xjs_sync_AllStop` | 全部停止监视 |
+| `xjs_sync_GetPendingCount` | 获取积压待处理数量 |
 
-      (c) You must retain, in the Source form of any Derivative Works
-          that You distribute, all copyright, patent, trademark, and
-          attribution notices from the Source form of the Work,
-          excluding those notices that do not pertain to any part of
-          the Derivative Works; and
+### 搜索结果 API
 
-      (d) If the Work includes a "NOTICE" text file as part of its
-          distribution, then any Derivative Works that You distribute must
-          include a readable copy of the attribution notices contained
-          within such NOTICE file, excluding those notices that do not
-          pertain to any part of the Derivative Works, in at least one
-          of the following places: within a NOTICE text file distributed
-          as part of the Derivative Works; within the Source form or
-          documentation, if provided along with the Derivative Works; or,
-          within a display generated by the Derivative Works, if and
-          wherever such third-party notices normally appear. The contents
-          of the NOTICE file are for informational purposes only and
-          do not modify the License. You may add Your own attribution
-          notices within Derivative Works that You distribute, alongside
-          or as an addendum to the NOTICE text from the Work, provided
-          that such additional attribution notices cannot be construed
-          as modifying the License.
+| 函数 | 说明 |
+|------|------|
+| `xjs_result_Create` | 创建搜索结果对象 |
+| `xjs_result_Destroy` | 销毁搜索结果对象 |
+| `xjs_result_Query` | 执行搜索 |
+| `xjs_result_Cancel` | 停止搜索 |
+| `xjs_result_GetCount` | 获取结果数量 |
+| `xjs_result_GetFileId` | 获取指定位置的文件 ID |
+| `xjs_result_CopyFileIdsByRange` | 按范围复制文件 ID（适配虚拟列表） |
+| `xjs_result_SetSortField` | 设置排序字段 |
+| `xjs_result_SetSelectedFilter` | 设置筛选分类 |
+| `xjs_result_GetFileIco` | 获取文件图标（PNG） |
+| `xjs_result_GetMatchKeywords` | 获取匹配关键词（用于高亮） |
+| `xjs_result_SetCallback` | 设置搜索结果回调 |
 
-      You may add Your own copyright statement to Your modifications and
-      may provide additional or different license terms and conditions
-      for use, reproduction, or distribution of Your modifications, or
-      for any such Derivative Works as a whole, provided Your use,
-      reproduction, and distribution of the Work otherwise complies with
-      the conditions stated in this License.
+---
 
-   5. Submission of Contributions. Unless You explicitly state otherwise,
-      any Contribution intentionally submitted for inclusion in the Work
-      by You to the Licensor shall be under the terms and conditions of
-      this License, without any additional terms or conditions.
-      Notwithstanding the above, nothing herein shall supersede or modify
-      the terms of any separate license agreement you may have executed
-      with Licensor regarding such Contributions.
+## 📋 数据库表结构
 
-   6. Trademarks. This License does not grant permission to use the trade
-      names, trademarks, service marks, or product names of the Licensor,
-      except as required for reasonable and customary use in describing the
-      origin of the Work and reproducing the content of the NOTICE file.
+```sql
+CREATE TABLE alltable (
+    Path        TEXT,      -- 完整文件路径
+    FName       TEXT,      -- 文件名
+    Ext         TEXT,      -- 扩展名
+    ParentName  TEXT,      -- 直接父目录名称
+    ParentPath  TEXT,      -- 直接父目录路径
+    AnyParent   TEXT,      -- 任意一级父目录名称
+    Size        TEXT,      -- 文件大小（需开启）
+    ModTime     DATETIME,  -- 修改时间（需开启）
+    FileType    TEXT,      -- 文件类型分类
+    IsDir       INTEGER,   -- 是否为目录
+    Alias       TEXT,      -- 别名（需开启）
+    Content     BLOB       -- 文件内容（虚拟字段，用于内容搜索，用到时才读取文件）
+);
+```
 
-   7. Disclaimer of Warranty. Unless required by applicable law or
-      agreed to in writing, Licensor provides the Work (and each
-      Contributor provides its Contributions) on an "AS IS" BASIS,
-      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-      implied, including, without limitation, any warranties or conditions
-      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
-      PARTICULAR PURPOSE. You are solely responsible for determining the
-      appropriateness of using or redistributing the Work and assume any
-      risks associated with Your exercise of permissions under this License.
+> 部分字段需要通过 `xjs_db_AddField()` 手动添加开启。
 
-   8. Limitation of Liability. In no event and under no legal theory,
-      whether in tort (including negligence), contract, or otherwise,
-      unless required by applicable law (such as deliberate and grossly
-      negligent acts) or agreed to in writing, shall any Contributor be
-      liable to You for damages, including any direct, indirect, special,
-      incidental, or consequential damages of any character arising as a
-      result of this License or out of the use or inability to use the
-      Work (including but not limited to damages for loss of goodwill,
-      work stoppage, computer failure or malfunction, or any and all
-      other commercial damages or losses), even if such Contributor
-      has been advised of the possibility of such damages.
+---
 
-   9. Accepting Warranty or Additional Liability. While redistributing
-      the Work or Derivative Works thereof, You may choose to offer,
-      and charge a fee for, acceptance of support, warranty, indemnity,
-      or other liability obligations and/or rights consistent with this
-      License. However, in accepting such obligations, You may act only
-      on Your own behalf and on Your sole responsibility, not on behalf
-      of any other Contributor, and only if You agree to indemnify,
-      defend, and hold each Contributor harmless for any liability
-      incurred by, or claims asserted against, such Contributor by reason
-      of your accepting any such warranty or additional liability.
+## 🔔 回调事件一览
 
-   END OF TERMS AND CONDITIONS
+### 引擎级回调（`xjs_SetCallback`）
 
-   APPENDIX: How to apply the Apache License to your work.
+| 事件类型 | 说明 |
+|---------|------|
+| `1` | 正在加载数据库 |
+| `2` | 数据库加载完成 |
+| `3` | 正在枚举某分区 |
+| `4` | 枚举进度（每 50ms 触发） |
+| `5` | 所有盘符枚举完成 |
+| `10` | 同步 — 文件创建 |
+| `11` | 同步 — 文件修改 |
+| `12` | 同步 — 文件移动 |
+| `13` | 同步 — 文件删除 |
+| `20` | 搜索结果已创建 |
+| `21` | 搜索结果即将销毁 |
 
-      To apply the Apache License to your work, attach the following
-      boilerplate notice, with the fields enclosed by brackets "[]"
-      replaced with your own identifying information. (Don't include
-      the brackets!)  The text should be enclosed in the appropriate
-      comment syntax for the file format. We also recommend that a
-      file or class name and description of purpose be included on the
-      same "printed page" as the copyright notice for easier
-      identification within third-party archives.
+### 搜索结果回调（`xjs_result_SetCallback`）
 
-   Copyright [yyyy] [name of copyright owner]
+| 事件类型 | 说明 |
+|---------|------|
+| `1` | 即将搜索（返回非 0 可拦截） |
+| `2` | 搜索过程（返回 0 继续 / -1 停止并丢弃 / 1 停止并保留） |
+| `3` | 搜索等待 |
+| `4` | 搜索完成 |
+| `10` | 搜索结果变化 |
+| `11` | 图标绘制事件 |
 
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
+---
 
-       http://www.apache.org/licenses/LICENSE-2.0
+## ⚠️ 注意事项
 
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
+1. **请勿在任何回调事件中对数据库进行写操作。**
+2. 所有返回 `const char*` / `const void*` 的函数**不需要手动释放内存**，内部自动管理。
+3. 所有返回的数据指针，请**第一时间获取或拷贝**，因为后续操作可能使其失效。
+4. 读写锁（`xjs_Lock`）是一个高级锁，支持锁升级。如果没有完全理解读写锁，**请不要使用**。
+5. 通常来说只允许读，除非需要完整的同步才需要考虑使用锁。
+6. 暂停同步后文件变化信息会保留在内存中，如不打算恢复，应使用 `xjs_sync_RemovePath` + `xjs_sync_Start` + `xjs_sync_Stop` 组合。
 
--------------------------------------------------------------------------------
-3. Hyrise SQL Parser
--------------------------------------------------------------------------------
-MIT License
+---
 
-Copyright (c) 2012-2017 Hasso-Plattner-Institut
+## 📄 许可证
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+本项目的许可证详见 [LICENSE](LICENSE) 文件。包含的第三方组件声明如下：
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+| 组件 | 许可证 |
+|------|--------|
+| [PCRE2](https://www.pcre.org/) | BSD-3-Clause WITH PCRE2-exception |
+| [oneTBB](https://github.com/oneapi-src/oneTBB) | Apache License 2.0 |
+| [Hyrise SQL Parser](https://github.com/hyrise/sql-parser) | MIT License |
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+---
+
+## 📬 联系方式
+
+| 渠道 | 信息 |
+|------|------|
+| QQ | 11345429 |
+| 邮箱 | 11345429@qq.com |
+| 官网 | [https://www.xunjieso.com](https://www.xunjieso.com) |
