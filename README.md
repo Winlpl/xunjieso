@@ -4,7 +4,7 @@
 
 **官网：** [https://www.xunjieso.com](https://www.xunjieso.com)  
 **作者：** 龙鹏林（小蜗牛）  
-**许可证：** 见 [LICENSE.md](LICENSE)
+**许可证：** 见 [LICENSE.md](LICENSE.md)
 
 ---
 
