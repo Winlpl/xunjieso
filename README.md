@@ -5,7 +5,7 @@
 **官网：** [https://www.xunjieso.com](https://www.xunjieso.com)  
 **作者：** 龙鹏林（小蜗牛）  
 **许可证：** 见 [LICENSE](LICENSE.md)
-
+**头文件：** 目前只做了C版本,如需其它语言,请让AI转换~非常好使
 ---
 
 ## ✨ 核心特性
