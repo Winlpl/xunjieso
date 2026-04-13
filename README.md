@@ -136,7 +136,7 @@ xjs_Destroy(engine);
 |------|------|
 | `xjs_db_AddField` | 添加自定义字段 |
 | `xjs_db_Load` | 加载数据库 |
-| `xjs_db_Save` | 保存数据库 |
+| `xjs_db_Save` | 保存数据库,如果程序要退出,那么请在保存之前,务必调用`xjs_sync_AllStop`,否则下次加载数据库不会断点续传的方式同步更新文件. |
 | `xjs_db_Clear` | 清空数据库 |
 | `xjs_db_ScanPath` | 遍历分区 / 路径 |
 | `xjs_db_StopScan` | 停止遍历 |
