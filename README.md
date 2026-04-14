@@ -248,7 +248,7 @@ CREATE TABLE alltable (
 
 ## 📄 许可证
 
-本项目的许可证详见 [LICENSE](LICENSE) 文件。包含的第三方组件声明如下：
+本项目的许可证详见 [LICENSE](LICENSE.md) 文件。包含的第三方组件声明如下：
 
 | 组件 | 许可证 |
 |------|--------|
