@@ -23,6 +23,9 @@
  * - 目前仅支持 Windows
  *
  * 所有返回 const char* 的函数不需要自己释放内存，内部会自动管理内存。
+ *      它不会返回`nullptr`只会返回如果失败会返回可读内存 + '\0'
+ *      意味着您可以直接使用 std::string() 来接收.
+ * 扫描分区/保存数据库, 阶段, 无法读取数据库的文件名, 路径等信息, 统一会返回空文本, 或者失败值
  * 需要注意的是，所有返回的数据指针，请第一时间获取或拷贝。
  * 版本：见 xjs_GetVersion()
  * 官网：https://www.xunjieso.com
@@ -129,17 +132,24 @@ XJS_API BOOL XJS_CALL xjs_SetCallback(
                             3: 正在枚举某分区
                                 typedef void (*EnumPartitionCallback)(void* userData, xjs_engine* engine, const char* driveLetter);
                             4: 枚举进度
-                                typedef BOOL (*EnumProgressCallback)(void* userData, xjs_engine* engine, const char* driveLetter, int enumeratedCount, int totalCount); // 在遍历时，每隔50毫秒触发一次
+                                typedef INT (*EnumProgressCallback)(void* userData, xjs_engine* engine, const char* driveLetter, int enumeratedCount, int totalCount); 
+                                // 在遍历时，每隔50毫秒触发一次, 返回 非0,则会停止遍历
+                                
                             5: 所有盘符枚举完成
                                 typedef void (*EnumCompleteCallback)(void* userData, xjs_engine* engine, int elapsedMs);
                             10: 同步_文件创建
-                                typedef BOOL (*SyncFileCreateCallback)(void* userData, xjs_engine* engine, const char* filePath);
+                                typedef INT (*SyncFileCreateCallback)(void* userData, xjs_engine* engine, const char* filePath);
+                                // 返回 非0,则会拦截本次同步
                             11: 同步_文件修改
-                                typedef BOOL (*SyncFileModifyCallback)(void* userData, xjs_engine* engine, const char* filePath);
+                                typedef INT (*SyncFileModifyCallback)(void* userData, xjs_engine* engine, const char* filePath);
+                                // 返回 非0,则会拦截本次同步
                             12: 同步_文件移动
-                                typedef BOOL (*SyncFileMoveCallback)(void* userData, xjs_engine* engine, const char* srcPath, const char* destPath);
+                                typedef INT (*SyncFileMoveCallback)(void* userData, xjs_engine* engine, const char* srcPath, const char* destPath);
+                                // 返回 非0,则会拦截本次同步
                             13: 同步_文件删除
-                                typedef BOOL (*SyncFileDeleteCallback)(void* userData, xjs_engine* engine, const char* filePath);
+                                typedef INT (*SyncFileDeleteCallback)(void* userData, xjs_engine* engine, const char* filePath);
+                                // 返回 非0,则会拦截本次同步
+                                
                             20: 搜索结果_已创建 (调用 xjs_result_Create() 时内部触发)
                                 typedef void (*ResultCreateCallback)(void* userData, xjs_engine* engine, xjs_result* result);
                             21: 搜索结果_即将销毁 (调用 xjs_result_Destroy 后进入销毁队列，由内部线程排队销毁)
@@ -194,7 +204,7 @@ XJS_API long long XJS_CALL xjs_db_GetMemorySize(xjs_engine* engine);
 // 加载数据库
 XJS_API BOOL XJS_CALL xjs_db_Load(xjs_engine* engine, const char* path, BOOL async);
 
-// 保存数据库
+// 保存数据库(如果程序要退出,那么请在保存之前,务必调用xjs_sync_AllStop,否则下次加载数据库不会断点续传的方式同步更新文件.)
 XJS_API BOOL XJS_CALL xjs_db_Save(xjs_engine* engine, const char* path);
 
 // 清空数据库
@@ -235,10 +245,10 @@ XJS_API BOOL XJS_CALL xjs_db_IsDir(xjs_engine* engine, int fileId);
 // 判断文件ID是否有效.
 XJS_API BOOL XJS_CALL xjs_db_IsFileIdValid(xjs_engine* engine, int fileId);
 
-// 取文件大小
+// 取文件大小 (失败返回: -1)
 XJS_API long long XJS_CALL xjs_db_GetFileSize(xjs_engine* engine, int fileId);
 
-// 取文件修改时间 (毫秒时间戳)
+// 取文件修改时间 (毫秒时间戳, 失败返回: 0)
 XJS_API long long XJS_CALL xjs_db_GetModifyTime(xjs_engine* engine, int fileId);
 
 // 取文件名
@@ -247,25 +257,25 @@ XJS_API const char* XJS_CALL xjs_db_GetName(xjs_engine* engine, int fileId);
 // 取父目录
 XJS_API const char* XJS_CALL xjs_db_GetParentDirectory(xjs_engine* engine, int fileId);
 
-// 取文件创建时间 (需要添加字段: "CreateTime")
+// 取文件创建时间 (需要添加字段: "创建时间", 失败返回: 0)
 XJS_API long long XJS_CALL xjs_db_GetCreateTime(xjs_engine* engine, int fileId);
 
-// 取文件访问时间 (需要添加字段: "AccessTime")
+// 取文件访问时间 (需要添加字段: "访问时间", 失败返回: 0)
 XJS_API long long XJS_CALL xjs_db_GetAccessTime(xjs_engine* engine, int fileId);
 
-// 取文件评分 (需要添加字段: "SmartSort")
+// 取文件评分 (需要添加字段: "文件评分")
 XJS_API short XJS_CALL xjs_db_GetRating(xjs_engine* engine, int fileId);
 
-// 增加文件评分 (需要添加字段: "SmartSort"), 负数为扣分.返回计算后的分数.如果没有写入权限, 会自动申请写入权限.
+// 增加文件评分 (需要添加字段: "文件评分"), 负数为扣分.返回计算后的分数.如果没有写入权限, 会自动申请写入权限.
 XJS_API short XJS_CALL xjs_db_AllRating(xjs_engine* engine, int fileId, short Rating);
 
-// 取文件别名 (需要添加字段: "Alias")
+// 取文件别名 (需要添加字段: "别名")
 XJS_API const char* XJS_CALL xjs_db_GetAlias(xjs_engine* engine, int fileId);
 
-// 取文件属性 (需要添加字段: "FileAttributes")
+// 取文件属性 (需要添加字段: "文件属性")
 XJS_API int XJS_CALL xjs_db_GetFileAttributes(xjs_engine* engine, int fileId);
 
-// 置文件别名 (需要添加字段: "Alias")
+// 置文件别名 (需要添加字段: "别名")
 XJS_API BOOL XJS_CALL xjs_db_SetAlias(
     xjs_engine* engine,
     int fileId, 
@@ -326,7 +336,7 @@ XJS_API int XJS_CALL xjs_sync_GetPendingCount(xjs_engine* engine);
 // 搜索结果 API
 // ============================================================================
 
-// 创建搜索结果对象
+// 创建搜索结果对象(如果程序处于遍历阶段, 将会返回nullptr)
 XJS_API xjs_result* XJS_CALL xjs_result_Create(xjs_engine* engine);
 
 // 搜索结果_设置回调 (非线程安全)   
@@ -436,7 +446,7 @@ XJS_API int XJS_CALL xjs_result_CopyFileIdsByRange(
 // 搜索结果排序 (需要注意的是，排序后不会触发任何事件，也不会改变搜索结果。如果需要结果产生变化，需要重新进行搜索)
 XJS_API void XJS_CALL xjs_result_SetSortField(
     xjs_result* result, 
-    const char* fieldName, // 字段名：{文件评分, 文件名, 文件夹, 修改时间, 文件大小, 文件类型} 任意一个成员值
+    const char* fieldName, // 字段名：{文件评分, 文件名, 文件夹, 修改时间, 文件大小, 文件类型} 任意一个成员值, 如果指定了数据库中不存在的字段, 则会使用`文件名`代替.
     BOOL ascending        // 从小到大
 );
 
@@ -454,7 +464,7 @@ XJS_API const char* XJS_CALL xjs_result_GetAllSortFieldArray(xjs_result* result)
 // 置当前筛选分类 (需要注意的是，不会触发任何事件，也不会改变搜索结果。如果需要结果产生变化，需要重新进行搜索)
 XJS_API BOOL XJS_CALL xjs_result_SetSelectedFilter(
     xjs_result* result, 
-    const char* categoryName // 分类名：{"全部", "文件夹"...}
+    const char* categoryName // 分类名："全部" || "文件夹"...
 );
 
 // 取当前筛选分类 (默认为'全部')
