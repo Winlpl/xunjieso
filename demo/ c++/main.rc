@@ -1,5 +1,0 @@
-// main.rc - 资源文件
-// 定义应用程序图标
-
-// 主应用程序图标（使用标准 IDI_APPLICATION 值 32512）
-32512 ICON "xunjieso.ico"
