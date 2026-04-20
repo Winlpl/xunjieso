@@ -1,3 +1,7 @@
+
+<img width="986" height="672" alt="xunjieso" src="https://github.com/user-attachments/assets/177887e9-39b2-4050-a86d-611858a2f2d3" />
+
+
 # 迅捷搜（xunjieso）
 
 > 高性能 Windows 文件搜索引擎 DLL，基于 MFT 解析与并行计算架构
