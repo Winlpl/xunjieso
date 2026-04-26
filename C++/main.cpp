@@ -742,8 +742,9 @@ std::wstring GetWindowTextStr(HWND hwnd) {
     int len = GetWindowTextLengthW(hwnd);
     if (len == 0) return L"";
     std::wstring text(len + 1, 0);
-    GetWindowTextW(hwnd, &text[0], len + 1);
-    text.resize(len);
+    int actualLen = GetWindowTextW(hwnd, &text[0], len + 1);
+    if (actualLen == 0) return L"";  /* 【修复】窗口句柄无效或获取失败 */
+    text.resize(actualLen);
     return text;
 }
 
@@ -1229,7 +1230,11 @@ LRESULT CALLBACK SearchEditProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             return 0;
         }
     }
-    return CallWindowProcW(g_origEditProc, hwnd, msg, wParam, lParam);
+    /* 【修复】检查原始窗口过程是否有效 */
+    if (g_origEditProc) {
+        return CallWindowProcW(g_origEditProc, hwnd, msg, wParam, lParam);
+    }
+    return DefWindowProcW(hwnd, msg, wParam, lParam);
 }
 
 /* ========== 工具栏布局计算 ========== */
@@ -1360,7 +1365,11 @@ void InitUI(HWND hwnd) {
     wci.hCursor = LoadCursorW(NULL, IDC_ARROW);
     wci.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);
     wci.lpszClassName = L"SearchIconCls";
-    RegisterClassExW(&wci);
+    /* 【修复】检查窗口类注册是否成功 */
+    if (!RegisterClassExW(&wci)) {
+        MessageBoxW(hwnd, L"注册搜索图标窗口类失败", L"错误", MB_OK | MB_ICONERROR);
+        return;
+    }
     int y = TOOLBAR_Y, h = TOOLBAR_H;
     g_hSearchIcon = CreateWindowExW(0, L"SearchIconCls", L"",
         WS_VISIBLE | WS_CHILD, MARGIN, y, 36, h, hwnd, NULL, wci.hInstance, NULL);
@@ -1817,6 +1826,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                         g_iconCacheOrder.clear();
                         LeaveCriticalSection(&g_csIcon);
                         for (HICON h : iconsToDestroy) DestroyIcon(h);
+                        /* 【修复】检查当前滚动位置，如果超出新项目范围则重置到顶部 */
+                        int oldTop = ListView_GetTopIndex(g_hResultList);
+                        if (oldTop >= cnt && cnt > 0) {
+                            ListView_EnsureVisible(g_hResultList, 0, FALSE);
+                        }
                         ListView_SetItemCount(g_hResultList, cnt);
                         ListView_RedrawItems(g_hResultList, 0, cnt);
                         wchar_t status[256];
@@ -2073,6 +2087,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         case WM_SEARCH_COMPLETE: {
             SearchCompleteData* data = (SearchCompleteData*)wParam;
             ListView_SetItemCount(g_hResultList, data->resultCount);
+            /* 【修复】搜索内容改变时滚动条回到顶部 */
+            if (data->resultCount > 0) {
+                ListView_EnsureVisible(g_hResultList, 0, FALSE);
+            }
             wchar_t status[256];
             /* 【新增】显示内存占用，使用 SDK 自带的 xjs_util_FormatFileSize */
             long long memSize = g_engine ? xjs_db_GetMemorySize(g_engine) : 0;
@@ -2269,12 +2287,16 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow) {
     wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     wc.lpszClassName = L"XunJieSuoWndClass";
     wc.hIconSm = hAppIconSm ? hAppIconSm : LoadIconW(NULL, IDI_APPLICATION);
-    RegisterClassExW(&wc);
+    /* 【修复】检查窗口类注册是否成功 */
+    if (!RegisterClassExW(&wc)) {
+        MessageBoxW(NULL, L"注册主窗口类失败", L"错误", MB_OK | MB_ICONERROR);
+        return 0;
+    }
     /* 加载窗口配置 */
     int winX, winY, winW, winH;
     bool maximized;
     LoadWindowConfig(winX, winY, winW, winH, maximized);
-    /* 【修复】检查窗口位置是否在有效屏幕范围内，防止拔掉显示器后窗口"隐身" */
+    /* 【修复】检查窗口位置是否在有效屏幕范围内，防止拔掉显示器后窗口"隐身" */ 
     if (winX != CW_USEDEFAULT && winY != CW_USEDEFAULT) {
         HMONITOR hMonitor = MonitorFromPoint({winX, winY}, MONITOR_DEFAULTTONULL);
         if (!hMonitor) {
@@ -2291,9 +2313,15 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow) {
     ShowWindow(hwnd, nCmdShow);
     UpdateWindow(hwnd);
     MSG msg;
-    while (GetMessageW(&msg, NULL, 0, 0)) {
+    while (true) {
+        /* 【修复】正确处理 GetMessageW 返回值 */
+        BOOL ret = GetMessageW(&msg, NULL, 0, 0);
+        if (ret == 0 || ret == -1) break;
         TranslateMessage(&msg);
         DispatchMessageW(&msg);
     }
+    /* 【修复】释放应用程序图标 */
+    if (hAppIcon) DestroyIcon(hAppIcon);
+    if (hAppIconSm) DestroyIcon(hAppIconSm);
     return (int)msg.wParam;
 }
