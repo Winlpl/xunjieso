@@ -1,4 +1,4 @@
-/*
+﻿/*
  * xunjieso.h
  * 迅捷搜 API 原生 C/C++ 头文件
  * 说明：文本编码统一采用 UTF-8
@@ -484,8 +484,27 @@ XJS_API const char* XJS_CALL xjs_result_GetSelectedFilter(xjs_result* result);
 XJS_API const char* XJS_CALL xjs_result_GetAllFilter(xjs_result* result);
 
 
+// 根据路径调整评分, 需要注意的是, 当前搜索对象, 排序方式必须是:'文件评分', 且搜索词不为空, 如果是SQL语句会忽略当前排序.
+// 负数是降低排名.需要注意的是, 添加后需要重新搜索才会生效.
+// 可以是目录, 文件.注意, 区分大小写哦.也不支持通配符.目录内的所有子目录, 子文件都会被影响.
+XJS_API int XJS_CALL xjs_result_AddBoostPath(xjs_result* result, const char* Path, short delta_score);
+
+
+
+// 根据扩展名调整评分, 需要注意的是, 当前搜索对象, 排序方式必须是:'文件评分', 且搜索词不为空, 如果是SQL语句会忽略当前排序.
+// 负数是降低排名.需要注意的是, 添加后需要重新搜索才会生效.
+// 扩展名, 不包含"."哦
+XJS_API int XJS_CALL xjs_result_AddBoostExt(xjs_result* result, const char* Ext, short delta_score);
+
+
+
 // 移除搜索结果 从搜索结果中，移除指定ID, 返回实际移除数量.
 XJS_API int XJS_CALL xjs_result_RemoveFileId(xjs_result* result, const int* idArray, int count);
+
+// 重置搜索结果ID, 不可在搜索过程中调用.通常用于`搜索完成事件`
+// 通常它用于对搜索结果, 自定义排序后, 设置进来.
+XJS_API int XJS_CALL xjs_result_ResetFileId(xjs_result* result, const int* idArray, int count);
+
 
 // 获取用户设定的值，运行时的值，不会保存到数据库中
 XJS_API void* XJS_CALL xjs_result_GetUserValue(xjs_result* result);
