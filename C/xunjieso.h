@@ -1,4 +1,4 @@
-﻿/*
+/*
  * xunjieso.h
  * 迅捷搜 API 原生 C/C++ 头文件
  * 说明：文本编码统一采用 UTF-8
@@ -187,6 +187,8 @@ XJS_API BOOL XJS_CALL xjs_Unlock(xjs_engine* engine, BOOL isReadOnly);
 // 判断一个搜索结果对象, 是否在文件引擎中(判断`xjs_result*`是否有效)
 XJS_API BOOL XJS_CALL xjs_ResultIsExist(xjs_engine* engine, xjs_result* result);
 
+
+
 // ============================================================================
 // 数据库 API
 // ============================================================================
@@ -233,8 +235,51 @@ XJS_API double XJS_CALL xjs_db_GetScanProgress(xjs_engine* engine);
 */  
 XJS_API int XJS_CALL xjs_db_GetEngineState(xjs_engine* engine);
 
+
+// 从数据库中删除索引: 文件/目录
+// 如果要排除目录, 请在调用此方法前,注册`xjs_SetCallback`文件创建事件.并对该目录进行拦截.
+XJS_API int XJS_CALL xjs_db_RemovePath(xjs_engine* engine, const char* Path);
+
+
+// 设置数据库级别的元信息文本 (key-value)
+// 此接口用于写入数据库全局元数据，而非针对某个文件/目录。
+// 可用于存储版本号、构建时间、摘要信息、插件扩展字段等。
+// 注意：此元信息与文件索引无关，不会影响搜索结果。
+// 元信息会随同数据库一起被保存。
+XJS_API BOOL xjs_db_SetMetaText(xjs_engine* engine, const char* key, const char* value);
+
+
+// 获取数据库级别的元信息文本 (key-value)
+// 此接口用于读取数据库全局元数据，而非针对某个文件/目录。
+// 可用于获取版本号、构建时间、摘要信息、插件扩展字段等。
+// 注意：此元信息与文件索引无关，不会影响搜索结果。
+// 返回值为 UTF-8 文本指针；若 key 不存在，返回 空字符串,而非 NULL。
+// 元信息会随同数据库一起被保存。
+XJS_API const char* xjs_db_GetMetaText(xjs_engine* engine, const char* key);
+
+
+// 删除数据库级别的元信息文本 (key-value)
+// 此接口用于删除数据库全局元数据，而非针对某个文件/目录。
+// 可用于移除版本号、构建时间、摘要信息、插件扩展字段等。
+// 注意：此元信息与文件索引无关，不会影响搜索结果。
+// 元信息会随同数据库一起被保存。
+// 返回 TRUE 表示删除成功；FALSE 表示 key 不存在或删除失败。
+XJS_API BOOL xjs_db_DelMeta (xjs_engine* engine, const char* key);
+
+
+// 判断数据库级别的元信息文本 (key-value) 是否存在
+// 此接口用于检测数据库全局元数据是否存在指定 key。
+// 可用于判断版本号、构建时间、摘要信息、插件扩展字段等是否已写入。
+// 注意：此元信息与文件索引无关，不会影响搜索结果。
+// 元信息会随同数据库一起被保存。
+// 返回 TRUE 表示存在；FALSE 表示不存在。
+XJS_API BOOL xjs_db_HasMeta(xjs_engine* engine, const char* key);
+
+
+
 // 取文件总数 (包含文件夹、驱动器等)
 XJS_API int XJS_CALL xjs_db_GetFileCount(xjs_engine* engine);
+
 
 // 复制所有文件ID (返回已复制的文件ID数量)
 XJS_API int XJS_CALL xjs_db_CopyAllFileId(xjs_engine* engine, int* idArray, int bufferCount);
@@ -426,6 +471,12 @@ XJS_API int XJS_CALL xjs_result_GetCount(xjs_result* result);
 
 // 取文件ID (返回 -1 代表失败)
 XJS_API int XJS_CALL xjs_result_GetFileId(xjs_result* result, int index);
+
+
+// 根据文件ID取索引 (返回 -1 代表未找到)
+// 用于文件数量变化时, 刷新UI, 保证显示用户当前显示/选中的表项
+XJS_API int XJS_CALL xjs_result_GetFileIdIndex (xjs_result* result, int FileId);
+
 
 // 复制所有文件ID (返回已复制的文件ID数量)
 XJS_API int XJS_CALL xjs_result_CopyAllFileId(
