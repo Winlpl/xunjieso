@@ -60,7 +60,7 @@
 
 ```c
 // 创建引擎
-xjs_engine* engine = xjs_Create(nullptr, nullptr);
+xjs_engine* engine = xjs_Create();
 
 // 添加需要的数据库字段（必须在遍历之前调用）
 xjs_db_AddField(engine, "文件大小", nullptr);
